@@ -35,6 +35,7 @@ class Commit {
 
 class Root {
   public commits: Array<Commit> = [];
+  public dbChanges: boolean = false;
 }
 
 const output = "HelloWorld.md";
@@ -44,7 +45,13 @@ let helpers = require("handlebars-helpers")({
   handlebars: hbs,
 });
 
-const source = `# Global list of CS ({{commits.length}})
+const source = `
+{{#if dbChanges}}
+Die DB-Scripts befinden sich unter DbScripts 
+{{else}}
+Es sind keine Datenbank Anpassungen erforderlich.
+{{/if}}
+# Global list of CS ({{commits.length}})
 {{#forEach commits}}
 {{#if isFirst}}### Associated commits{{/if}}
 * ** ID{{this.id}}**
@@ -86,7 +93,14 @@ data.commits = [
   }),
 ];
 
-let result = template(data);
+const allChanges = data.commits.reduce(
+  (cs: Array<Change>, c) => [...cs, ...c.changes],
+  []
+);
+
+data.dbChanges = allChanges.some((cs) => cs.item.path.includes("DbScripts"));
+
+const result = template(data);
 
 writeFile(output, result, function (err) {
   if (err) return console.log(err);
