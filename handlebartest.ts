@@ -123,7 +123,7 @@ hbs.registerHelper("hasDbScripts", function (commits: Array<Commit>): boolean {
     (cs: Array<Change>, c) => [...cs, ...c.changes],
     []
   );
-  return allChanges.some((cs) => cs.item.path.includes("DbScripts"));
+  return allChanges.some((cs) => cs.item.path.includes("nexus_ng/Migration"));
 });
 
 let template = hbs.compile(source);
