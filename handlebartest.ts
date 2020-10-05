@@ -36,6 +36,7 @@ class Commit {
 class Root {
   public commits: Array<Commit> = [];
   public dbChanges: boolean = false;
+  public assemblies: Array<object> = [];
 }
 
 const output = "HelloWorld.md";
@@ -59,6 +60,10 @@ Es sind keine Datenbank Anpassungen erforderlich.
    -  **Commited by:** {{this.author.displayName}}
    -  **Changed files count:** {{this.changes.length}}
 {{/forEach}}
+{{#forEach (assemblies commits)}}
+{{#if isFirst}}### Changed Assemblies:{{/if}}
+  - **{{this.assembly}}**
+{{/forEach}}
 {{#forEach commits}}
 {{#if isFirst}}### Associated changed files{{/if}}
 {{#forEach this.changes}}
@@ -75,7 +80,10 @@ data.commits = [
     message: "[DevOps] whatever",
     changes: [
       new Change({
-        item: new ChangeItem({ path: "C:\\src\\trunk\\whatever" }),
+        item: new ChangeItem({
+          path:
+            "$/ffm.Playground/Nexus.Shared/1.21.x/Modules.Cpoe/Trunk/src/Laboratory.Core/FlalavLabvalues.cs",
+        }),
       }),
     ],
   }),
@@ -85,11 +93,30 @@ data.commits = [
     message: "changed unieuq constraints",
     changes: [
       new Change({
-        item: new ChangeItem({ path: "C:\\src\\trunk\\whatever\\DbScripts" }),
+        item: new ChangeItem({
+          path:
+            "$/ffm.Playground/Nexus.Shared/1.21.x/Modules.Cpoe/Trunk/DbScripts/SqlServerNG/nexus_ng/CreateDB/Structure/fpoctp_t_cpoe_templates.tab",
+        }),
       }),
     ],
   }),
 ];
+
+hbs.registerHelper("assemblies", function (
+  commits: Array<Commit>
+): Array<object> {
+  const allChanges = commits.reduce(
+    (cs: Array<Change>, c) => [...cs, ...c.changes],
+    []
+  );
+  const srcChanges = allChanges
+    .filter((cs) => cs.item.path.includes("/Trunk/src/"))
+    .map((c) => c.item.path.split("/Trunk/src/")[1].split("/")[0])
+    .filter((s) => s.includes("."))
+    .map((a) => "Nexus.Shared.Modules." + a + ".dll")
+    .map((s) => ({ assembly: s }));
+  return srcChanges;
+});
 
 hbs.registerHelper("hasDbScripts", function (commits: Array<Commit>): boolean {
   const allChanges = commits.reduce(
