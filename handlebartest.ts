@@ -46,7 +46,7 @@ let helpers = require("handlebars-helpers")({
 });
 
 const source = `
-{{#if dbChanges}}
+{{#if (hasDbScripts commits)}}
 Die DB-Scripts befinden sich unter DbScripts 
 {{else}}
 Es sind keine Datenbank Anpassungen erforderlich.
@@ -65,8 +65,6 @@ Es sind keine Datenbank Anpassungen erforderlich.
   -  **File path:** {{this.item.path}}
 {{/forEach}}
 {{/forEach}}`;
-
-let template = hbs.compile(source);
 
 let data = new Root();
 
@@ -93,13 +91,15 @@ data.commits = [
   }),
 ];
 
-const allChanges = data.commits.reduce(
-  (cs: Array<Change>, c) => [...cs, ...c.changes],
-  []
-);
+hbs.registerHelper("hasDbScripts", function (commits: Array<Commit>): boolean {
+  const allChanges = commits.reduce(
+    (cs: Array<Change>, c) => [...cs, ...c.changes],
+    []
+  );
+  return allChanges.some((cs) => cs.item.path.includes("DbScripts"));
+});
 
-data.dbChanges = allChanges.some((cs) => cs.item.path.includes("DbScripts"));
-
+let template = hbs.compile(source);
 const result = template(data);
 
 writeFile(output, result, function (err) {
