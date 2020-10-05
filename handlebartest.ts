@@ -37,21 +37,29 @@ class Root {
   public commits: Array<Commit> = [];
 }
 
+const output = "HelloWorld.md";
+
+let hbs = Handlebars.create();
+let helpers = require("handlebars-helpers")({
+  handlebars: hbs,
+});
+
 const source = `# Global list of CS ({{commits.length}})
-{{#each commits}}
+{{#forEach commits}}
 {{#if isFirst}}### Associated commits{{/if}}
 * ** ID{{this.id}}**
    -  **Message:** {{this.message}}
    -  **Commited by:** {{this.author.displayName}}
-   -  **FileCount:** {{this.changes.length}}
-{{#each this.changes}}
-      -  **File path:** {{this.item.path}}
-{{/each}}
-{{/each}}`;
+   -  **Changed files count:** {{this.changes.length}}
+{{/forEach}}
+{{#forEach commits}}
+{{#if isFirst}}### Associated changed files{{/if}}
+{{#forEach this.changes}}
+  -  **File path:** {{this.item.path}}
+{{/forEach}}
+{{/forEach}}`;
 
-const output = "HelloWorld.md";
-
-let template = Handlebars.compile(source);
+let template = hbs.compile(source);
 
 let data = new Root();
 
@@ -61,7 +69,19 @@ data.commits = [
     author: new Author({ displayName: "Marco" }),
     message: "[DevOps] whatever",
     changes: [
-      new Change({ item: new ChangeItem({ path: "C:\\src\\whatever" }) }),
+      new Change({
+        item: new ChangeItem({ path: "C:\\src\\trunk\\whatever" }),
+      }),
+    ],
+  }),
+  new Commit({
+    id: "35",
+    author: new Author({ displayName: "Marco" }),
+    message: "changed unieuq constraints",
+    changes: [
+      new Change({
+        item: new ChangeItem({ path: "C:\\src\\trunk\\whatever\\DbScripts" }),
+      }),
     ],
   }),
 ];
