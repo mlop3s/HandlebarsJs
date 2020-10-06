@@ -48,7 +48,7 @@ let helpers = require("handlebars-helpers")({
 
 const source = `
 {{#forEach (getMigrations commits)}}
-### Die DB-Scripts befinden sich unter DbScripts:
+{{#if isFirst}}### Die DB-Scripts befinden sich unter DbScripts:{{/if}}
 - {{this.migration}}
 {{else}}
 ### Es sind keine Datenbank Anpassungen erforderlich.
@@ -65,11 +65,9 @@ const source = `
 {{#if isFirst}}### Changed Assemblies:{{/if}}
   - **{{this.assembly}}**
 {{/forEach}}
-{{#forEach commits}}
+{{#forEach (distinctFiles commits)}}
 {{#if isFirst}}### Associated changed files{{/if}}
-{{#forEach this.changes}}
-  -  **File path:** {{this.item.path}}
-{{/forEach}}
+  -  **File path:** {{this.path}}
 {{/forEach}}`;
 
 let data = new Root();
@@ -127,6 +125,19 @@ data.commits = [
       }),
     ],
   }),
+  new Commit({
+    id: "38",
+    author: new Author({ displayName: "Marco" }),
+    message: "small chane on migration",
+    changes: [
+      new Change({
+        item: new ChangeItem({
+          path:
+            "$/ffm.Playground/Nexus.Shared/1.21.x/Modules.Cpoe/Trunk/DbScripts/OracleNG/nexus_ng/Migration/Structure/20200212_162150_fpocty.tab.mod",
+        }),
+      }),
+    ],
+  }),
 ];
 
 hbs.registerHelper("assemblies", function (
@@ -147,6 +158,20 @@ hbs.registerHelper("assemblies", function (
   return distinct.map((s) => ({ assembly: s }));
 });
 
+hbs.registerHelper("distinctFiles", function (
+  commits: Array<Commit>
+): Array<object> {
+  const allChanges = commits.reduce(
+    (cs: Array<Change>, c) => [...cs, ...c.changes],
+    []
+  );
+  const srcChanges = allChanges.map(
+    (c) => c.item.path.split("/Modules.Cpoe/")[1]
+  );
+  const distinct = [...new Set(srcChanges)];
+  return distinct.map((s) => ({ path: s }));
+});
+
 hbs.registerHelper("hasDbScripts", function (commits: Array<Commit>): boolean {
   const allChanges = commits.reduce(
     (cs: Array<Change>, c) => [...cs, ...c.changes],
@@ -164,9 +189,9 @@ hbs.registerHelper("getMigrations", function (
   );
   const migrations = allChanges
     .filter((cs) => cs.item.path.includes("nexus_ng/Migration"))
-    .map((c) => c.item.path.split("/Trunk/")[1])
-    .map((s) => ({ migration: s }));
-  return migrations;
+    .map((c) => c.item.path.split("/Trunk/")[1]);
+  const distinct = [...new Set(migrations)];
+  return distinct.map((s) => ({ migration: s }));
 });
 
 let template = hbs.compile(source);
