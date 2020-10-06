@@ -48,10 +48,10 @@ let helpers = require("handlebars-helpers")({
 
 const source = `
 {{#forEach (getMigrations commits)}}
-###Die DB-Scripts befinden sich unter DbScripts:
+### Die DB-Scripts befinden sich unter DbScripts:
 - {{this.migration}}
 {{else}}
-###Es sind keine Datenbank Anpassungen erforderlich.
+### Es sind keine Datenbank Anpassungen erforderlich.
 {{/forEach}}
 # Global list of CS ({{commits.length}})
 {{#forEach commits}}
@@ -79,6 +79,19 @@ data.commits = [
     id: "34",
     author: new Author({ displayName: "Marco" }),
     message: "[DevOps] whatever",
+    changes: [
+      new Change({
+        item: new ChangeItem({
+          path:
+            "$/ffm.Playground/Nexus.Shared/1.21.x/Modules.Cpoe/Trunk/src/Laboratory.Core/FlalavLabvalues.cs",
+        }),
+      }),
+    ],
+  }),
+  new Commit({
+    id: "32",
+    author: new Author({ displayName: "Marco" }),
+    message: "[DevOps] whichever",
     changes: [
       new Change({
         item: new ChangeItem({
@@ -127,9 +140,11 @@ hbs.registerHelper("assemblies", function (
     .filter((cs) => cs.item.path.includes("/Trunk/src/"))
     .map((c) => c.item.path.split("/Trunk/src/")[1].split("/")[0])
     .filter((s) => s.includes("."))
-    .map((a) => "Nexus.Shared.Modules." + a + ".dll")
-    .map((s) => ({ assembly: s }));
-  return srcChanges;
+    .map((a) => "Nexus.Shared.Modules." + a + ".dll");
+
+  const distinct = [...new Set(srcChanges)];
+
+  return distinct.map((s) => ({ assembly: s }));
 });
 
 hbs.registerHelper("hasDbScripts", function (commits: Array<Commit>): boolean {
