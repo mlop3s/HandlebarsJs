@@ -47,12 +47,14 @@ let helpers = require("handlebars-helpers")({
 });
 
 const source = `
+{{#if (hasDbScripts commits)}}
 {{#forEach (getMigrations commits)}}
 {{#if isFirst}}### Die DB-Scripts befinden sich unter DbScripts:{{/if}}
 - {{this.migration}}
+{{/forEach}}
 {{else}}
 ### Es sind keine Datenbank Anpassungen erforderlich.
-{{/forEach}}
+{{/if}}
 # Global list of CS ({{commits.length}})
 {{#forEach commits}}
 {{#if isFirst}}### Associated commits{{/if}}
@@ -120,7 +122,7 @@ data.commits = [
       new Change({
         item: new ChangeItem({
           path:
-            "$/ffm.Playground/Nexus.Shared/1.21.x/Modules.Cpoe/Trunk/DbScripts/OracleNG/nexus_ng/Migration/Structure/20200212_162150_fpocty.tab.mod",
+            "$/ffm.Playground/Nexus.Shared/1.21.x/Modules.Cpoe/Trunk/DbScripts/OracleNG/nexus_ng/Migrati/Structure/20200212_162150_fpocty.tab.mod",
         }),
       }),
     ],
@@ -133,7 +135,7 @@ data.commits = [
       new Change({
         item: new ChangeItem({
           path:
-            "$/ffm.Playground/Nexus.Shared/1.21.x/Modules.Cpoe/Trunk/DbScripts/OracleNG/nexus_ng/Migration/Structure/20200212_162150_fpocty.tab.mod",
+            "$/ffm.Playground/Nexus.Shared/1.21.x/Modules.Cpoe/Trunk/DbScripts/OracleNG/nexus_ng/Migrati/Structure/20200212_162150_fpocty.tab.mod",
         }),
       }),
     ],
