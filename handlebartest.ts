@@ -56,7 +56,7 @@ const source = `
 # Global list of CS ({{commits.length}})
 {{#forEach commits}}
 {{#if isFirst}}### Associated commits{{/if}}
-* ** ID{{this.id}}**
+* **ID{{this.id}}**
    -  **Message:** {{this.message}}
    -  **Commited by:** {{this.author.displayName}}
    -  **Changed files count:** {{this.changes.length}}
