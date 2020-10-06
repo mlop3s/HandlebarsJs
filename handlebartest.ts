@@ -47,11 +47,12 @@ let helpers = require("handlebars-helpers")({
 });
 
 const source = `
-{{#if (hasDbScripts commits)}}
-Die DB-Scripts befinden sich unter DbScripts 
+{{#forEach (getMigrations commits)}}
+###Die DB-Scripts befinden sich unter DbScripts:
+- {{this.migration}}
 {{else}}
-Es sind keine Datenbank Anpassungen erforderlich.
-{{/if}}
+###Es sind keine Datenbank Anpassungen erforderlich.
+{{/forEach}}
 # Global list of CS ({{commits.length}})
 {{#forEach commits}}
 {{#if isFirst}}### Associated commits{{/if}}
@@ -100,6 +101,19 @@ data.commits = [
       }),
     ],
   }),
+  new Commit({
+    id: "37",
+    author: new Author({ displayName: "Marco" }),
+    message: "added new migration",
+    changes: [
+      new Change({
+        item: new ChangeItem({
+          path:
+            "$/ffm.Playground/Nexus.Shared/1.21.x/Modules.Cpoe/Trunk/DbScripts/OracleNG/nexus_ng/Migration/Structure/20200212_162150_fpocty.tab.mod",
+        }),
+      }),
+    ],
+  }),
 ];
 
 hbs.registerHelper("assemblies", function (
@@ -124,6 +138,20 @@ hbs.registerHelper("hasDbScripts", function (commits: Array<Commit>): boolean {
     []
   );
   return allChanges.some((cs) => cs.item.path.includes("nexus_ng/Migration"));
+});
+
+hbs.registerHelper("getMigrations", function (
+  commits: Array<Commit>
+): Array<object> {
+  const allChanges = commits.reduce(
+    (cs: Array<Change>, c) => [...cs, ...c.changes],
+    []
+  );
+  const migrations = allChanges
+    .filter((cs) => cs.item.path.includes("nexus_ng/Migration"))
+    .map((c) => c.item.path.split("/Trunk/")[1])
+    .map((s) => ({ migration: s }));
+  return migrations;
 });
 
 let template = hbs.compile(source);
